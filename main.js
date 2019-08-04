@@ -1,7 +1,7 @@
 var canvas = document.querySelector('canvas');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-var startedAngle = -30 ;
+var angle = -30 ;
 gravity = 0.5
 friction = 0.5;
 var bulletsArray = [];
@@ -28,11 +28,11 @@ window.addEventListener('mousemove', function (event) {
 
 document.addEventListener('keydown', function(event) {
     if (event.code == 'ArrowDown') {
-        startedAngle = startedAngle + 4;
+        angle = angle + 1;
        
     }
     if (event.code == 'ArrowUp') {
-        startedAngle = startedAngle - 4;
+        angle = angle - 1;
     }
     if ( event.code == 'Space') {
         gun.shoot();
@@ -42,8 +42,10 @@ document.addEventListener('keydown', function(event) {
 function Bullet(dx, dy) {
     this.dx = dx;
     this.dy = dy;
-    this.x = gun.x;
-    this.y = gun.y;
+    // TODO make the bullets start from the center
+    // probably it should be changed through in "gun" update
+    this.x =  40 + gun.size * Math.cos(Math.abs(inRad(angle)));
+    this.y =  600 + gun.size * Math.sin((inRad(angle)));
     this.rad = 10;
     this.color = 'red';
 
@@ -52,6 +54,7 @@ function Bullet(dx, dy) {
         c.arc(this.x, this.y, this.rad, 0, Math.PI * 2, false);
         c.fillStyle = this.color;
         c.fill();
+        console.log(this.x)
     }
 
     this.update = function() {
@@ -101,10 +104,10 @@ function Target(x, y, dx, dy, rad, color) {
 function Gun (x,y) {
     this.x = x;
     this.y = innerHeight - 50 * y;
-    this.size = 50;
+    this.size = 250;
     this.color = 'black';
-    this.width =  this.size * 5;
-    this.height = this.size * 2;
+    this.width =  this.size;
+    this.height = this.size / 2;
 
     this.draw = function() {
         // c.fillStyle = this.color;
@@ -113,10 +116,11 @@ function Gun (x,y) {
     this.update = function() {
         c.save(); 
         c.translate(40, 600);
-        c.rotate(inRad(startedAngle));
-        // console.log(mouse.x, mouse.y);
-        c.fillStyle= 'black';
-        c.fillRect( 0, 0, this.width, this.height);
+        c.rotate(inRad(angle));
+        c.strokeStyle = "green";
+        c.strokeRect(0, 0, this.width, this.height);
+        // c.fillStyle= 'black';
+        // c.fillRect( 0, 0, this.width, this.height);
         c.restore(); 
     }
     this.shoot = function () { 
