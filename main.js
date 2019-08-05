@@ -5,6 +5,10 @@ var gun = new Gun(10, 10);
 var angle = -30;
 const gravity = 0.5
 const friction = 0.5;
+const gunPositionX = 10;
+const gunPositionY = 780;
+let score = 0;
+console.log(innerHeight, innerWidth);
 var bulletsArray = [];
 var targetsArray = [];
 var c = canvas.getContext('2d');
@@ -41,6 +45,12 @@ document.addEventListener('keydown', function (event) {
         console.log('shoot');
     }
 });
+function getDistance(x1, y1, x2, y2){
+    let xDistance = x2 - x1;
+    let yDistance = y2 - y1;
+
+    return Math.sqrt(Math.pow(xDistance, 2) +  Math.pow(yDistance, 2));
+}
 // Physics of Bullet
 function Bullet(dx, dy) {
     this.dx = dx;
@@ -48,8 +58,8 @@ function Bullet(dx, dy) {
     // TODO make the bullets start from the center
     // probably it should be changed through in "gun" update
     // Should be connected with gun appearence, because now it's kinda hardcoded
-    this.x = 40 + gun.size * Math.cos(Math.abs(inRad(angle)));
-    this.y = 600 + gun.size * Math.sin((inRad(angle)));
+    this.x = gunPositionX + gun.size * Math.cos((inRad(angle)));
+    this.y = gunPositionY + gun.size * Math.sin((inRad(angle)));
     this.rad = 10;
     this.color = 'red';
 
@@ -57,8 +67,9 @@ function Bullet(dx, dy) {
         c.beginPath();
         c.arc(this.x, this.y, this.rad, 0, Math.PI * 2, false);
         c.fillStyle = this.color;
+       
         c.fill();
-        console.log(this.x)
+        //console.log(this.x)
     }
     // Controls the reflection and physics of these things
     this.update = function () {
@@ -70,8 +81,10 @@ function Bullet(dx, dy) {
         } else {
             this.dy += gravity;
         }
-        this.x += this.dx;
-        this.y += this.dy;
+        this.dx = 50 * Math.cos((inRad(angle)));
+        this.dy = 50 * Math.sin((inRad(angle)));
+         this.x += this.dx;
+         this.y += this.dy;
     }
 }
 
@@ -99,8 +112,8 @@ function Target(x, y, dx, dy, rad, color) {
         } else {
             this.dy += gravity;
         }
-        this.x += this.dx;
-        this.y += this.dy;
+        // this.x += this.dx;
+        // this.y += this.dy;
     }
 }
 
@@ -121,10 +134,10 @@ function Gun(x, y) {
     // Rotates the gun
     this.update = function () {
         c.save();
-        c.translate(40, 600);
+        c.translate(gunPositionX, gunPositionY);
         c.rotate(inRad(angle));
         c.strokeStyle = "green";
-        c.strokeRect(0, 0, this.width, this.height);
+        c.strokeRect(this.width / 6, -this.height / 4, this.width , this.height/2);
         // c.fillStyle= 'black';
         // c.fillRect( 0, 0, this.width, this.height);
         c.restore();
@@ -162,7 +175,15 @@ function animate() {
     for (let index = 0; index < bulletsArray.length; index++) {
         bulletsArray[index].update();
         bulletsArray[index].draw();
+        for (let j = 0; j < targetsArray.length; j++) {
+          if(getDistance(bulletsArray[index].x, bulletsArray[index].y, targetsArray[j].x, targetsArray[j].y) < bulletsArray[index].rad + targetsArray[j].rad ){
+              console.log('connect', score);
+              targetsArray[j].rad = 0;
+              score += 10;
+
+        }
     }
+} 
     gun.draw();
     gun.update();
 }
