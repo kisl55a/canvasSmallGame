@@ -1,5 +1,5 @@
 # canvasSmallGame
-Just for practise in object-oriented programming 
-Space - shoot
-ArrowUp/ ArrowDown - control the gun
+Just for practise in object-oriented programming  <br>
+Space - shoot <br>
+ArrowUp/ ArrowDown - control the gun <br>
 Good Luck!
