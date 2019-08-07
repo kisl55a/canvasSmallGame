@@ -8,6 +8,9 @@ const friction = 0.5;
 const gunPositionX = 10;
 const gunPositionY = 780;
 let score = 0;
+let counter = 0;
+let level = 0;
+let numberOfBalls = 5;
 console.log(innerHeight, innerWidth);
 var bulletsArray = [];
 var targetsArray = [];
@@ -45,11 +48,11 @@ document.addEventListener('keydown', function (event) {
         console.log('shoot');
     }
 });
-function getDistance(x1, y1, x2, y2){
+function getDistance(x1, y1, x2, y2) {
     let xDistance = x2 - x1;
     let yDistance = y2 - y1;
 
-    return Math.sqrt(Math.pow(xDistance, 2) +  Math.pow(yDistance, 2));
+    return Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
 }
 // Physics of Bullet
 function Bullet(dx, dy) {
@@ -67,7 +70,7 @@ function Bullet(dx, dy) {
         c.beginPath();
         c.arc(this.x, this.y, this.rad, 0, Math.PI * 2, false);
         c.fillStyle = this.color;
-       
+
         c.fill();
         //console.log(this.x)
     }
@@ -83,8 +86,8 @@ function Bullet(dx, dy) {
         }
         this.dx = 50 * Math.cos((inRad(angle)));
         this.dy = 50 * Math.sin((inRad(angle)));
-         this.x += this.dx;
-         this.y += this.dy;
+        this.x += this.dx;
+        this.y += this.dy;
     }
 }
 
@@ -104,16 +107,17 @@ function Target(x, y, dx, dy, rad, color) {
     }
     // Controls the reflection and physics of these things
     this.update = function () {
-        if (this.x + this.rad > innerWidth || this.x - this.rad < 0) {
+        if (this.x - this.rad < 10 && this.rad != 0) {
+            resetGame();
             this.dx = -this.dx;
         }
-        if (this.y + this.rad > innerHeight || this.y - this.rad < 0) {
-            this.dy = -this.dy * friction;
+        if (this.y + this.rad > innerHeight || this.y - this.rad < 10) {
+            this.dy = -this.dy
         } else {
-            this.dy += gravity;
+            // this.dy += gravity;
         }
-        // this.x += this.dx;
-        // this.y += this.dy;
+        this.x += this.dx;
+        this.y += this.dy;
     }
 }
 
@@ -128,31 +132,36 @@ function Gun(x, y) {
     this.height = this.size / 2;
 
     this.draw = function () {
-        // c.fillStyle = this.color;
-        // c.fillRect( this.x, this.y, this.width, this.height)
     }
     // Rotates the gun
     this.update = function () {
+        c.beginPath();
+        c.arc(this.x + 70, this.y * 2.5, 100, 0, Math.PI * 2, false);
+        c.fillStyle = this.color;
         c.save();
         c.translate(gunPositionX, gunPositionY);
         c.rotate(inRad(angle));
-        c.strokeStyle = "green";
-        c.strokeRect(this.width / 6, -this.height / 4, this.width , this.height/2);
-        // c.fillStyle= 'black';
-        // c.fillRect( 0, 0, this.width, this.height);
+        c.fill();
+        // c.strokeStyle = "green";
+        // c.strokeRect(this.width / 6, -this.height / 4, this.width , this.height/2);
+        c.fillStyle = 'black';
+        c.fillRect(this.width / 6, -this.height / 4, this.width, this.height / 2);
         c.restore();
+        c.font = "30px Arial";
+        c.fillText("Your score: " + score + "", 10, 50);
+        c.fillText("Your level: " + level + "", 10, 85);
     }
     this.shoot = function () {
         bulletsArray.push(new Bullet(10, 10));
     }
 }
-function init() {
-    for (let i = 0; i < 5; i++) {
-        let x = getRandomInt(30, innerWidth - 30);
-        let y = getRandomInt(30, innerHeight - 30);
-        let rad = getRandomInt(10, 20);
-        let dx = getRandomInt(-1, 1);
-        let dy = getRandomInt(-1, 1);
+function init(numberOfBalls) {
+    for (let i = 0; i < numberOfBalls; i++) {
+        let x = getRandomInt(innerWidth, innerWidth + 30);
+        let y = getRandomInt(0, innerHeight - 20);
+        let rad = getRandomInt(30, 50);
+        let dx = getRandomInt(-1, 0);
+        let dy = getRandomInt(2, -2);
         targetsArray.push(new Target(x, y, dx, dy, rad, 'blue'));
 
     }
@@ -163,6 +172,23 @@ function init() {
     //     targetsArray.push(new Target(x, y, rad, 'blue'));   
     // }
 
+}
+function resetGame() {
+var r = confirm("You lose! Start again?");
+if (r == true) {
+     canvas.width = window.innerWidth;
+     canvas.height = window.innerHeight;
+     gun = new Gun(10, 10);
+     angle = -30;
+     score = 0;
+     counter = 0;
+     level = 0;
+     targetsArray = [];
+     numberOfBalls = 5;
+     init(numberOfBalls);
+} else {
+  txt = "You pressed Cancel!";
+} 
 }
 // Function that animates the whole program
 function animate() {
@@ -176,16 +202,21 @@ function animate() {
         bulletsArray[index].update();
         bulletsArray[index].draw();
         for (let j = 0; j < targetsArray.length; j++) {
-          if(getDistance(bulletsArray[index].x, bulletsArray[index].y, targetsArray[j].x, targetsArray[j].y) < bulletsArray[index].rad + targetsArray[j].rad ){
-              console.log('connect', score);
-              targetsArray[j].rad = 0;
-              score += 10;
-
+            if (getDistance(bulletsArray[index].x, bulletsArray[index].y, targetsArray[j].x, targetsArray[j].y) < bulletsArray[index].rad + targetsArray[j].rad && targetsArray[j].rad != 0) {
+                console.log('connect', score);
+                targetsArray[j].rad = 0;
+                counter += 1;
+                score += 10;
+                if (counter == targetsArray.length) {
+                    level += 1;
+                    numberOfBalls += 1;
+                    init(numberOfBalls);
+                }
+            }
         }
     }
-} 
     gun.draw();
     gun.update();
 }
-init();
+init(numberOfBalls);
 animate();
